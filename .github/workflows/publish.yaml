@@ -5,24 +5,33 @@ on:
     branches:
       - master
 
+permissions:
+  packages: write
+  contents: write
+
 jobs:
   build:
+    env:
+      CI: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: 'pnpm'
       - name: Install dependencies
-        env:
-          CI: true
-        run: npm install
+        run: pnpm install
       - name: Test
-        run: npm test
+        run: pnpm test
       - name: Publish
         if: success()
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
